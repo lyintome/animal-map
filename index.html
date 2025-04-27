@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free School Satellite + StreetView Map</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+  <style>
+    html, body, #map {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    /* Hide/Show button */
+    #toggleTags {
+      position: absolute;
+      top: 10px; right: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 6px 12px;
+      border: 1px solid #888;
+      border-radius: 4px;
+      font: 14px sans-serif;
+      cursor: pointer;
+    }
+    /* Remove-tag button inside popups */
+    .remove-btn {
+      display: block;
+      margin-top: 6px;
+      padding: 4px 8px;
+      background: #fff;
+      border: 1px solid #888;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    /* Street View link */
+    .streetview-link {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <button id="toggleTags">Hide Tags</button>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Esri-Leaflet plugin for free satellite + labels -->
+  <script src="https://unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1) School center & bounds (~±0.0035° ≈ 400 m)
+      const center = [-37.85002, 144.72234];
+      const bounds = L.latLngBounds(
+        [center[0] - 0.0035, center[1] - 0.0035],
+        [center[0] + 0.0035, center[1] + 0.0035]
+      );
+
+      // 2) Initialize map
+      const map = L.map('map', {
+        center,
+        zoom: 17,
+        minZoom: 16,
+        maxZoom: 19,
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0
+      });
+
+      // 3) Add Esri satellite imagery + labels
+      L.esri.basemapLayer('Imagery').addTo(map);
+      L.esri.basemapLayer('ImageryLabels').addTo(map);
+
+      // 4) Marker layer & toggle control
+      const markers = L.layerGroup().addTo(map);
+      let tagsVisible = true;
+      document.getElementById('toggleTags').addEventListener('click', () => {
+        tagsVisible = !tagsVisible;
+        markers[tagsVisible ? 'addTo' : 'removeFrom'](map);
+        document.getElementById('toggleTags').textContent =
+          tagsVisible ? 'Hide Tags' : 'Show Tags';
+      });
+
+      // 5) Click to drop a tag
+      map.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        const marker = L.marker([lat, lng]);
+        markers.addLayer(marker);
+
+        // Build popup with Remove + Street View link
+        const streetUrl = 
+          `https://www.google.com/maps/@?api=1&map_action=pano` +
+          `&viewpoint=${lat.toFixed(5)},${lng.toFixed(5)}`;
+        const popupHtml = `
+          <div>
+            <b>Tag</b><br>
+            Lat: ${lat.toFixed(5)}<br>
+            Lng: ${lng.toFixed(5)}
+            <button class="remove-btn">Remove Tag</button>
+            <a class="streetview-link" href="${streetUrl}" target="_blank">
+              Open Street View
+            </a>
+          </div>
+        `;
+        marker.bindPopup(popupHtml).openPopup();
+
+        // Wire up Remove button when popup is ready
+        marker.on('popupopen', () => {
+          document.querySelector('.remove-btn').onclick = () => {
+            markers.removeLayer(marker);
+          };
+        });
+      });
+
+      console.log('✅ Free satellite + labels map loaded.');
+    });
+  </script>
+</body>
+</html>

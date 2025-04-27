@@ -1,0 +1,43 @@
+/* fill the entire viewport */
+html, body, #map {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hide/Show Tags button */
+#toggleTags {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font: 14px sans-serif;
+  cursor: pointer;
+}
+
+/* Popup controls */
+.remove-btn,
+.streetview-link {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.remove-btn {
+  background: #fff;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.streetview-link {
+  color: #007bff;
+  text-decoration: none;
+}
